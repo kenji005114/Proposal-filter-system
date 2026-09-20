@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime  @default(now())
+  projects     Project[]
+}
+
+model Project {
+  id              String    @id @default(cuid())
+  clientId        String
+  client          Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  title           String
+  description     String
+  budget          Int?
+  deadline        String?
+  createdAt       DateTime  @default(now())
+  proposals       Proposal[]
+  finalSelection  FinalSelection?
+}
+
+enum Badge {
+  NONE
+  REGULAR
+  BRONZE
+  SILVER
+  CERTIFIED
+}
+
+model Proposal {
+  id                String   @id @default(cuid())
+  projectId         String
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  lancerName        String
+  proposalAmount    Int?
+  proposalMessage   String?
+  achievementsCount Int      @default(0)
+  unsatisfiedCount  Int      @default(0)
+  completionRate    Float    @default(0)
+  badge             Badge    @default(NONE)
+  beginnerFriendly  Boolean  @default(false)
+  identityVerified  Boolean  @default(false)
+  ndaVerified       Boolean  @default(false)
+  phoneVerified     Boolean  @default(false)
+  lancersCheck      Boolean  @default(false)
+  score             Float?
+  excluded          Boolean  @default(false)
+  exclusionReason   String?
+  createdAt         DateTime @default(now())
+  finalSelections   FinalSelection[]
+}
+
+enum SelectionStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+}
+
+model FinalSelection {
+  id         String          @id @default(cuid())
+  projectId  String          @unique
+  project    Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  proposalId String
+  proposal   Proposal        @relation(fields: [proposalId], references: [id])
+  status     SelectionStatus @default(PENDING_PAYMENT)
+  createdAt  DateTime        @default(now())
+  payment    Payment?
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  KONBINI
+  BANK_TRANSFER
+  PAYPAY
+  CRYPTO_BNB
+  CRYPTO_BEP20_USDT
+  CRYPTO_ETH
+}
+
+enum PaymentProvider {
+  KOMOJU
+  NOWPAYMENTS
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model Payment {
+  id               String          @id @default(cuid())
+  finalSelectionId String          @unique
+  finalSelection   FinalSelection  @relation(fields: [finalSelectionId], references: [id], onDelete: Cascade)
+  method           PaymentMethod
+  provider         PaymentProvider
+  providerRef      String?
+  amountJpy        Int
+  status           PaymentStatus   @default(PENDING)
+  createdAt        DateTime        @default(now())
+  paidAt           DateTime?
+}

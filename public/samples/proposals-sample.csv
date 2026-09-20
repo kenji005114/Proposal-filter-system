@@ -1,0 +1,7 @@
+lancer_name,proposal_amount,proposal_message,achievements_count,unsatisfied_count,completion_rate,badge,beginner_friendly,identity_verified,nda_verified,phone_verified,lancers_check
+田中デザイン事務所,280000,実績多数ございます。ぜひご検討ください。,100,5,98,silver,false,true,true,true,true
+佐藤クリエイティブ,300000,認定ランサーです。丁寧な対応を心掛けています。,20,0,100,certified,false,true,true,true,true
+鈴木デザイン,290000,まだ実績は少ないですが頑張ります。,10,1,90,regular,true,true,true,true,true
+高橋スタジオ,270000,本人確認は未完了ですが実績はあります。,80,2,95,bronze,false,false,true,true,true
+伊藤ワークス,260000,実績は多いですが電話確認が未完了です。,50,10,85,bronze,false,true,true,false,true
+渡辺デザイン,310000,初心者ですが丁寧に対応します。,3,0,100,regular,true,true,true,true,true
