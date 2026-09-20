@@ -1,13 +1,6 @@
 import Papa from "papaparse";
 import type { Badge } from "@prisma/client";
 
-export interface ProjectBriefRow {
-  title: string;
-  description: string;
-  budget: number | null;
-  deadline: string | null;
-}
-
 export interface ProposalRow {
   lancerName: string;
   proposalAmount: number | null;
@@ -40,22 +33,6 @@ function toBadge(value: unknown): Badge {
   if (normalized.includes("ブロンズ") || normalized === "bronze") return "BRONZE";
   if (normalized.includes("レギュラー") || normalized === "regular") return "REGULAR";
   return "NONE";
-}
-
-export function parseProjectBriefCsv(csvText: string): ProjectBriefRow {
-  const { data } = Papa.parse<Record<string, string>>(csvText, {
-    header: true,
-    skipEmptyLines: true,
-  });
-  const row = data[0];
-  if (!row) throw new Error("募集要項CSVにデータ行が見つかりません。");
-
-  return {
-    title: row.title ?? row["タイトル"] ?? "",
-    description: row.description ?? row["募集要項"] ?? "",
-    budget: row.budget || row["予算"] ? toNumber(row.budget ?? row["予算"]) : null,
-    deadline: row.deadline ?? row["納期"] ?? null,
-  };
 }
 
 export function parseProposalsCsv(csvText: string): ProposalRow[] {

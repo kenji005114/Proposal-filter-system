@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { parseProjectBriefCsv, parseProposalsCsv } from "@/lib/csv";
+import { parseProposalsCsv } from "@/lib/csv";
 import { scoreProposal } from "@/lib/scoring";
 
 export async function POST(req: Request) {
@@ -10,15 +10,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "ログインが必要です。" }, { status: 401 });
   }
 
-  const { projectCsv, proposalsCsv } = await req.json();
-  if (!projectCsv || !proposalsCsv) {
-    return NextResponse.json({ error: "CSVファイルが不足しています。" }, { status: 400 });
+  const { title, description, budget, deadline, proposalsCsv } = await req.json();
+
+  if (!title) {
+    return NextResponse.json({ error: "タイトルを入力してください。" }, { status: 400 });
+  }
+  if (!proposalsCsv) {
+    return NextResponse.json({ error: "提案一覧CSVをアップロードしてください。" }, { status: 400 });
   }
 
-  let brief;
   let proposalRows;
   try {
-    brief = parseProjectBriefCsv(projectCsv);
     proposalRows = parseProposalsCsv(proposalsCsv);
   } catch (err) {
     return NextResponse.json(
@@ -27,9 +29,6 @@ export async function POST(req: Request) {
     );
   }
 
-  if (!brief.title) {
-    return NextResponse.json({ error: "募集要項CSVにtitle列が必要です。" }, { status: 400 });
-  }
   if (proposalRows.length === 0) {
     return NextResponse.json({ error: "提案一覧CSVにデータがありません。" }, { status: 400 });
   }
@@ -37,10 +36,10 @@ export async function POST(req: Request) {
   const project = await prisma.project.create({
     data: {
       clientId: session.user.id,
-      title: brief.title,
-      description: brief.description,
-      budget: brief.budget,
-      deadline: brief.deadline,
+      title,
+      description: description ?? "",
+      budget: budget ? Number(budget) : null,
+      deadline: deadline || null,
       proposals: {
         create: proposalRows.map((row) => {
           const result = scoreProposal(row);
