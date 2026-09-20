@@ -43,7 +43,11 @@ export default async function ProjectDetailPage({
         ← プロジェクト一覧に戻る
       </Link>
       <h1 className="mt-2 text-2xl font-bold text-slate-900">{project.title}</h1>
-      <p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{project.description}</p>
+      <p className="mt-1 flex gap-4 text-xs text-slate-500">
+        <span>予算（自動抽出）: {project.budget ? `${project.budget.toLocaleString()}円` : "未検出"}</span>
+        <span>納期（自動抽出）: {project.deadline ?? "未検出"}</span>
+      </p>
+      <p className="mt-3 whitespace-pre-wrap text-sm text-slate-600">{project.description}</p>
 
       {project.finalSelection && (
         <div className="mt-6 rounded-md border border-sky-200 bg-sky-50 p-4 text-sm">

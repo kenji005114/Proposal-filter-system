@@ -16,10 +16,7 @@ export default function NewProjectPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [proposalsFile, setProposalsFile] = useState<File | null>(null);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [budget, setBudget] = useState("");
-  const [deadline, setDeadline] = useState("");
+  const [briefText, setBriefText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -27,6 +24,10 @@ export default function NewProjectPage() {
     e.preventDefault();
     if (!proposalsFile) {
       setError("提案一覧CSVを選択してください。");
+      return;
+    }
+    if (!briefText.trim()) {
+      setError("募集要項を入力してください。");
       return;
     }
     setError(null);
@@ -38,7 +39,7 @@ export default function NewProjectPage() {
       const res = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, budget, deadline, proposalsCsv }),
+        body: JSON.stringify({ briefText, proposalsCsv }),
       });
 
       if (!res.ok) {
@@ -60,7 +61,7 @@ export default function NewProjectPage() {
     <div className="mx-auto max-w-2xl flex-1 px-6 py-12">
       <h1 className="text-2xl font-bold text-slate-900">CSVから新規プロジェクト作成</h1>
       <p className="mt-2 text-sm text-slate-600">
-        タイトルと募集要項を入力し、Lancersの提案一覧をまとめたCSVをアップロードしてください。
+        Lancersの提案一覧CSVをアップロードし、募集要項を1つの欄にまとめて入力してください。
         フォーマットは{" "}
         <a href="/samples/proposals-sample.csv" className="text-sky-600 hover:underline">
           提案一覧サンプル
@@ -70,17 +71,9 @@ export default function NewProjectPage() {
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-6">
         <div>
-          <label className="block text-sm font-medium text-slate-700">タイトル</label>
-          <input
-            required
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700">提案一覧CSV</label>
+          <label className="block text-sm font-medium text-slate-700">
+            CSVファイルのアップロード
+          </label>
           <input
             ref={fileInputRef}
             type="file"
@@ -92,9 +85,9 @@ export default function NewProjectPage() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-md bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
             >
-              CSVを選択
+              CSVファイルのアップロード
             </button>
             <span className="text-sm text-slate-500">
               {proposalsFile ? proposalsFile.name : "ファイルが選択されていません"}
@@ -104,34 +97,19 @@ export default function NewProjectPage() {
 
         <div>
           <label className="block text-sm font-medium text-slate-700">募集要項</label>
+          <p className="mt-1 text-xs text-slate-500">
+            タイトル・内容・納期・予算などをまとめて入力してください（1行目がタイトルとして扱われます）。
+            「納期：2026-10-31」「予算：300,000円」のように書いていただくと、該当項目を自動で抽出します。
+          </p>
           <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={6}
-            placeholder="プロジェクトの募集要項を入力してください。"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            value={briefText}
+            onChange={(e) => setBriefText(e.target.value)}
+            rows={12}
+            placeholder={
+              "ECサイトのトップページデザイン制作\n\nレスポンシブ対応のECサイトトップページをデザインしていただける方を募集します。\nFigmaでの納品を想定しています。\n\n予算：300,000円\n納期：2026-10-31"
+            }
+            className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2"
           />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700">予算（円・任意）</label>
-            <input
-              type="number"
-              value={budget}
-              onChange={(e) => setBudget(e.target.value)}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700">納期（任意）</label>
-            <input
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              placeholder="例: 2026-10-31"
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-            />
-          </div>
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}

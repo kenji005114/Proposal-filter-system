@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { parseProposalsCsv } from "@/lib/csv";
+import { parseBriefText } from "@/lib/brief";
 import { scoreProposal } from "@/lib/scoring";
 
 export async function POST(req: Request) {
@@ -10,13 +11,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "ログインが必要です。" }, { status: 401 });
   }
 
-  const { title, description, budget, deadline, proposalsCsv } = await req.json();
+  const { briefText, proposalsCsv } = await req.json();
 
-  if (!title) {
-    return NextResponse.json({ error: "タイトルを入力してください。" }, { status: 400 });
+  if (!briefText || !String(briefText).trim()) {
+    return NextResponse.json({ error: "募集要項を入力してください。" }, { status: 400 });
   }
   if (!proposalsCsv) {
     return NextResponse.json({ error: "提案一覧CSVをアップロードしてください。" }, { status: 400 });
+  }
+
+  const brief = parseBriefText(briefText);
+  if (!brief.title) {
+    return NextResponse.json({ error: "募集要項からタイトルを抽出できませんでした。" }, { status: 400 });
   }
 
   let proposalRows;
@@ -36,10 +42,10 @@ export async function POST(req: Request) {
   const project = await prisma.project.create({
     data: {
       clientId: session.user.id,
-      title,
-      description: description ?? "",
-      budget: budget ? Number(budget) : null,
-      deadline: deadline || null,
+      title: brief.title,
+      description: brief.description,
+      budget: brief.budget,
+      deadline: brief.deadline,
       proposals: {
         create: proposalRows.map((row) => {
           const result = scoreProposal(row);
@@ -65,5 +71,5 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json({ id: project.id });
+  return NextResponse.json({ id: project.id, extracted: brief });
 }
