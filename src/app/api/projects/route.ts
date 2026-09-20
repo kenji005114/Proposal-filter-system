@@ -11,6 +11,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "ログインが必要です。" }, { status: 401 });
   }
 
+  const client = await prisma.client.findUnique({ where: { id: session.user.id } });
+  if (!client) {
+    return NextResponse.json(
+      { error: "セッションが無効になっています。ログアウトして再度ログインしてください。" },
+      { status: 401 }
+    );
+  }
+
   const { briefText, proposalsCsv } = await req.json();
 
   if (!briefText || !String(briefText).trim()) {
