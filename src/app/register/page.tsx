@@ -7,21 +7,27 @@ import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (password !== confirmPassword) {
+      setError("パスワードが一致しません。");
+      return;
+    }
+
     setLoading(true);
 
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ email, password, confirmPassword }),
     });
 
     if (!res.ok) {
@@ -56,15 +62,6 @@ export default function RegisterPage() {
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700">お名前</label>
-          <input
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-          />
-        </div>
-        <div>
           <label className="block text-sm font-medium text-slate-700">メールアドレス</label>
           <input
             required
@@ -85,6 +82,17 @@ export default function RegisterPage() {
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
           />
         </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">パスワード（確認）</label>
+          <input
+            required
+            minLength={8}
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+          />
+        </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -96,6 +104,19 @@ export default function RegisterPage() {
           {loading ? "登録中..." : "登録する"}
         </button>
       </form>
+
+      <div className="mt-6 flex items-center gap-3">
+        <div className="h-px flex-1 bg-slate-200" />
+        <span className="text-xs text-slate-400">または</span>
+        <div className="h-px flex-1 bg-slate-200" />
+      </div>
+
+      <button
+        onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+        className="mt-6 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50"
+      >
+        Googleアカウントで登録
+      </button>
 
       <p className="mt-6 text-sm text-slate-600">
         すでに登録済みの方は{" "}

@@ -70,6 +70,19 @@ export default function LoginPage() {
         </button>
       </form>
 
+      <div className="mt-6 flex items-center gap-3">
+        <div className="h-px flex-1 bg-slate-200" />
+        <span className="text-xs text-slate-400">または</span>
+        <div className="h-px flex-1 bg-slate-200" />
+      </div>
+
+      <button
+        onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+        className="mt-6 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50"
+      >
+        Googleアカウントでログイン
+      </button>
+
       <p className="mt-6 text-sm text-slate-600">
         アカウントをお持ちでない方は{" "}
         <Link href="/register" className="text-sky-600 hover:underline">

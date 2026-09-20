@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
@@ -7,6 +8,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
@@ -18,7 +23,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!email || !password) return null;
 
         const client = await prisma.client.findUnique({ where: { email } });
-        if (!client) return null;
+        if (!client?.passwordHash) return null;
 
         const valid = await bcrypt.compare(password, client.passwordHash);
         if (!valid) return null;
@@ -28,8 +33,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) token.id = user.id;
+    async jwt({ token, user, account }) {
+      if (account?.provider === "google" && user?.email) {
+        const client = await prisma.client.upsert({
+          where: { email: user.email },
+          update: {},
+          create: { email: user.email, name: user.name ?? null },
+        });
+        token.id = client.id;
+      } else if (user) {
+        token.id = user.id;
+      }
       return token;
     },
     async session({ session, token }) {
