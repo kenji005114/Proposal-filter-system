@@ -42,7 +42,15 @@ export default async function ProjectDetailPage({
       <Link href="/dashboard" className="text-sm text-sky-600 hover:underline">
         ← プロジェクト一覧に戻る
       </Link>
-      <h1 className="mt-2 text-2xl font-bold text-slate-900">{project.title}</h1>
+      <div className="mt-2 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-slate-900">{project.title}</h1>
+        <Link
+          href={`/dashboard/projects/${project.id}/analysis`}
+          className="rounded-md border border-sky-500 px-3 py-1.5 text-sm font-semibold text-sky-600 hover:bg-sky-50"
+        >
+          募集要項分析
+        </Link>
+      </div>
       <p className="mt-1 flex gap-4 text-xs text-slate-500">
         <span>予算（自動抽出）: {project.budget ? `${project.budget.toLocaleString()}円` : "未検出"}</span>
         <span>納期（自動抽出）: {project.deadline ?? "未検出"}</span>

@@ -34,6 +34,34 @@ model Project {
   createdAt       DateTime  @default(now())
   proposals       Proposal[]
   finalSelection  FinalSelection?
+  briefItems      BriefAnalysisItem[]
+}
+
+enum BriefItemCategory {
+  TITLE
+  DEADLINE
+  BUDGET
+  DETAIL
+  DESIRED
+  AVOID
+  ONLINE_MEETING
+  OTHER
+}
+
+enum BriefItemSource {
+  EXTRACTED
+  MANUAL
+}
+
+model BriefAnalysisItem {
+  id        String            @id @default(cuid())
+  projectId String
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  category  BriefItemCategory
+  content   String
+  source    BriefItemSource   @default(EXTRACTED)
+  excluded  Boolean           @default(false)
+  createdAt DateTime          @default(now())
 }
 
 enum Badge {
