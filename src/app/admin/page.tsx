@@ -6,10 +6,16 @@ export default async function AdminPage() {
   const session = await auth();
   if (session?.user?.role !== "admin") redirect("/admin/login");
 
-  const clients = await prisma.client.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { _count: { select: { projects: true } } },
-  });
+  const [allClients, admins] = await Promise.all([
+    prisma.client.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { _count: { select: { projects: true } } },
+    }),
+    prisma.admin.findMany({ select: { email: true } }),
+  ]);
+
+  const adminEmails = new Set(admins.map((admin) => admin.email));
+  const clients = allClients.filter((client) => !adminEmails.has(client.email));
 
   return (
     <div className="mx-auto max-w-4xl flex-1 px-6 py-12">
