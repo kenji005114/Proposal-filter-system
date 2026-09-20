@@ -13,6 +13,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
     Credentials({
+      id: "credentials",
+      name: "Client",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
@@ -28,7 +30,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const valid = await bcrypt.compare(password, client.passwordHash);
         if (!valid) return null;
 
-        return { id: client.id, email: client.email, name: client.name };
+        return { id: client.id, email: client.email, name: client.name, role: "client" };
+      },
+    }),
+    Credentials({
+      id: "admin-credentials",
+      name: "Admin",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      authorize: async (credentials) => {
+        const email = credentials?.email as string | undefined;
+        const password = credentials?.password as string | undefined;
+        if (!email || !password) return null;
+
+        const admin = await prisma.admin.findUnique({ where: { email } });
+        if (!admin) return null;
+
+        const valid = await bcrypt.compare(password, admin.passwordHash);
+        if (!valid) return null;
+
+        return { id: admin.id, email: admin.email, name: null, role: "admin" };
       },
     }),
   ],
@@ -41,13 +64,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           create: { email: user.email, name: user.name ?? null },
         });
         token.id = client.id;
+        token.role = "client";
       } else if (user) {
         token.id = user.id;
+        token.role = user.role ?? "client";
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) session.user.id = token.id as string;
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as "admin" | "client";
+      }
       return session;
     },
   },
