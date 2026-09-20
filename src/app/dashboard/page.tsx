@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { NewProjectPanel } from "./new-project-panel";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -15,15 +16,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-5xl flex-1 px-6 py-12">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">プロジェクト一覧</h1>
-        <Link
-          href="/dashboard/new"
-          className="rounded-md bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
-        >
-          + CSVから新規プロジェクト
-        </Link>
-      </div>
+      <h1 className="text-2xl font-bold text-slate-900">プロジェクト一覧</h1>
+
+      <NewProjectPanel />
 
       {projects.length === 0 ? (
         <p className="mt-8 text-slate-600">

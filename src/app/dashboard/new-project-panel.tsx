@@ -12,7 +12,7 @@ function readFile(file: File): Promise<string> {
   });
 }
 
-export default function NewProjectPage() {
+export function NewProjectPanel() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [proposalsFile, setProposalsFile] = useState<File | null>(null);
@@ -23,7 +23,7 @@ export default function NewProjectPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!proposalsFile) {
-      setError("提案一覧CSVを選択してください。");
+      setError("CSVファイルをアップロードしてください。");
       return;
     }
     if (!briefText.trim()) {
@@ -58,43 +58,35 @@ export default function NewProjectPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl flex-1 px-6 py-12">
-      <h1 className="text-2xl font-bold text-slate-900">CSVから新規プロジェクト作成</h1>
-      <p className="mt-2 text-sm text-slate-600">
-        Lancersの提案一覧CSVをアップロードし、募集要項を1つの欄にまとめて入力してください。
-        フォーマットは{" "}
+    <div className="mt-8 rounded-lg border border-slate-200 p-6">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv"
+        className="hidden"
+        onChange={(e) => setProposalsFile(e.target.files?.[0] ?? null)}
+      />
+
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-slate-900">CSVから新規プロジェクト作成</h2>
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="rounded-md bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
+        >
+          + CSVから新規プロジェクト
+        </button>
+      </div>
+      <p className="mt-1 text-sm text-slate-500">
+        {proposalsFile ? `選択中のファイル: ${proposalsFile.name}` : "CSVファイルが選択されていません"}
+        {" "}(
         <a href="/samples/proposals-sample.csv" className="text-sky-600 hover:underline">
           提案一覧サンプル
-        </a>{" "}
-        をご参照ください。
+        </a>
+        )
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-slate-700">
-            CSVファイルのアップロード
-          </label>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv"
-            className="hidden"
-            onChange={(e) => setProposalsFile(e.target.files?.[0] ?? null)}
-          />
-          <div className="mt-1 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="rounded-md bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400"
-            >
-              CSVファイルのアップロード
-            </button>
-            <span className="text-sm text-slate-500">
-              {proposalsFile ? proposalsFile.name : "ファイルが選択されていません"}
-            </span>
-          </div>
-        </div>
-
+      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
         <div>
           <label className="block text-sm font-medium text-slate-700">募集要項</label>
           <p className="mt-1 text-xs text-slate-500">
@@ -104,9 +96,9 @@ export default function NewProjectPage() {
           <textarea
             value={briefText}
             onChange={(e) => setBriefText(e.target.value)}
-            rows={12}
+            rows={10}
             placeholder={
-              "ECサイトのトップページデザイン制作\n\nレスポンシブ対応のECサイトトップページをデザインしていただける方を募集します。\nFigmaでの納品を想定しています。\n\n予算：300,000円\n納期：2026-10-31"
+              "ECサイトのトップページデザイン制作\n\nレスポンシブ対応のECサイトトップページをデザインしていただける方を募集します。\n\n予算：300,000円\n納期：2026-10-31"
             }
             className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2"
           />
